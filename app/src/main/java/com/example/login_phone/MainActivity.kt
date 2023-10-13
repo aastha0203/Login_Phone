@@ -37,6 +37,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.login_phone.ui.theme.Login_phoneTheme
@@ -50,7 +51,7 @@ import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
     private val mAuth = FirebaseAuth.getInstance()
-    var verificationOtp =""
+    var verificationOtp = ""
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -59,11 +60,11 @@ class MainActivity : ComponentActivity() {
                 Surface(
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    OTPScreen{mobileNum,otp->
-                        if(mobileNum.isNotEmpty()){
+                    OTPScreen { mobileNum, otp ->
+                        if (mobileNum.isNotEmpty()) {
                             send(mobileNum)
                         }
-                        if(otp.isNotEmpty()){
+                        if (otp.isNotEmpty()) {
                             otpVerification(otp)
                         }
                     }
@@ -72,143 +73,164 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-    val turnOffPhoneVerify=FirebaseAuth.getInstance().firebaseAuthSettings
+
+    val turnOffPhoneVerify = FirebaseAuth.getInstance().firebaseAuthSettings
         .setAppVerificationDisabledForTesting(false)
-    private fun send(mobileNum:String){
+
+    private fun send(mobileNum: String) {
         val options = PhoneAuthOptions.newBuilder(mAuth)
             .setPhoneNumber("+91$mobileNum")
-            .setTimeout(60L,TimeUnit.SECONDS)
+            .setTimeout(60L, TimeUnit.SECONDS)
             .setActivity(this)
-            .setCallbacks(object:
-            PhoneAuthProvider.OnVerificationStateChangedCallbacks(){
+            .setCallbacks(object :
+                PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
                 override fun onVerificationCompleted(p0: PhoneAuthCredential) {
-                    Toast.makeText(applicationContext,"Verification Completed",Toast.LENGTH_SHORT).show()
+                    Toast.makeText(applicationContext, "Verification Completed", Toast.LENGTH_SHORT)
+                        .show()
                 }
 
                 override fun onVerificationFailed(p0: FirebaseException) {
-                    Toast.makeText(applicationContext,"Verification Failed",Toast.LENGTH_SHORT).show()
+                    Toast.makeText(applicationContext, "Verification Failed", Toast.LENGTH_SHORT)
+                        .show()
                 }
 
                 override fun onCodeSent(otp: String, p1: PhoneAuthProvider.ForceResendingToken) {
                     super.onCodeSent(otp, p1)
-                    verificationOtp=otp
-                    Toast.makeText(applicationContext,"Otp Send Successfully",Toast.LENGTH_SHORT).show()
+                    verificationOtp = otp
+                    Toast.makeText(applicationContext, "Otp Send Successfully", Toast.LENGTH_SHORT)
+                        .show()
                 }
             }).build()
         PhoneAuthProvider.verifyPhoneNumber(options)
     }
-    private fun otpVerification(otp: String){
-        val credential=PhoneAuthProvider.getCredential(verificationOtp,otp)
-            FirebaseAuth.getInstance().signInWithCredential(credential)
-                .addOnCompleteListener(this){task->
-                    if(task.isSuccessful){
-                        Toast.makeText(applicationContext,"Verification Successful",Toast.LENGTH_SHORT).show()
-                    }
-                    else{
-                        Toast.makeText(applicationContext,"Wrong Otp",Toast.LENGTH_SHORT).show()
-                    }
 
+    private fun otpVerification(otp: String) {
+        val credential = PhoneAuthProvider.getCredential(verificationOtp, otp)
+        FirebaseAuth.getInstance().signInWithCredential(credential)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    Toast.makeText(
+                        applicationContext,
+                        "Verification Successful",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } else {
+                    Toast.makeText(applicationContext, "Wrong Otp", Toast.LENGTH_SHORT).show()
                 }
+
+            }
     }
 
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OTPScreen(
-    onClick:(mobileNum:String,otp:String)-> Unit
-){
+    onClick: (mobileNum: String, otp: String) -> Unit
+) {
 
-val context=LocalContext.current
-    var otpVal:String?=null
-    val phoneNumber=remember{ mutableStateOf("") }
+    val context = LocalContext.current
+    var otpVal: String? = null
+    val phoneNumber = remember { mutableStateOf("") }
 
-Column(
-    modifier=Modifier
-        .fillMaxSize()
-){
     Column(
-        modifier=Modifier
-            .fillMaxWidth(),
-        horizontalAlignment =Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ){
-  Text(text="OTP Screen",
-      fontSize=20.sp,
-      fontWeight = FontWeight.Bold
-  )
-    }
-    Column(
-        modifier=Modifier
-        .fillMaxSize(),
-        horizontalAlignment=Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    )
-    {
-        Image(painter = painterResource(id = R.drawable.baseline_phone_android_24),
-            contentDescription ="otp image" ,
-            modifier= Modifier
-                .width(100.dp)
-                .height(100.dp)
-        )
-        Spacer(modifier = Modifier.height(50.dp))
-        OutlinedTextField(value = phoneNumber.value, onValueChange =
-        {phoneNumber.value=it}, label = {Text(text="Phone Number")},
-            placeholder = {Text(text="Phone Number")},
-            leadingIcon = { Icon(Icons.Filled.Phone,contentDescription = "Phone Number") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions.Default.copy(
-                keyboardType = KeyboardType.Number,
-                imeAction = ImeAction.Done
-                
-            ),
-        )
-        Spacer(modifier = Modifier.height(20.dp))
-        Button(
-            onClick = {
-               onClick(phoneNumber.value,"")
-            },
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        Column(
             modifier = Modifier
-                .fillMaxWidth(0.8f)
-                .height(45.dp)
-                .clip(RoundedCornerShape(10.dp))
-                .background(Purple80)) {
-            Text(text = "Send Otp", fontSize = 15.sp,color=Color.White)
-            
-        }
-        Spacer(modifier = Modifier.height(40.dp))
-
-        Text (text="Enter the OTP",
-            fontSize=20.sp,
-            fontWeight = FontWeight.Bold
-        )
-        Spacer(modifier = Modifier.height(10.dp))
-        OTPTextFields(length = 6){
-            getOpt ->
-            otpVal = getOpt
-
-        }
-        Spacer(modifier=Modifier.height(30.dp))
-        Button(onClick={
-            if(otpVal!=null){
-                onClick("",otpVal!!)
-            }
-        },modifier= Modifier
-            .fillMaxWidth(0.8f)
-            .height(45.dp)
-            .clip(RoundedCornerShape(10.dp))
-            .background(Purple80),
-            shape= RoundedCornerShape(10.dp)
-        ){
+                .fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
             Text(
-                text ="Otp Verify",
-                fontSize=13.sp,
-                color= Color.White
+                text = "OTP Screen",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
             )
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        )
+        {
+            Image(
+                painter = painterResource(id = R.drawable.baseline_phone_android_24),
+                contentDescription = "otp image",
+                modifier = Modifier
+                    .width(100.dp)
+                    .height(100.dp)
+            )
+            Spacer(modifier = Modifier.height(50.dp))
+            OutlinedTextField(
+                value = phoneNumber.value,
+                onValueChange =
+                { phoneNumber.value = it },
+                label = { Text(text = "Phone Number") },
+                placeholder = { Text(text = "Phone Number") },
+                leadingIcon = { Icon(Icons.Filled.Phone, contentDescription = "Phone Number") },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done
+
+                ),
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+            Button(
+                onClick = {
+                    onClick(phoneNumber.value, "")
+                },
+                modifier = Modifier
+                    .fillMaxWidth(0.8f)
+                    .height(45.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Purple80)
+            ) {
+                Text(text = "Send Otp", fontSize = 15.sp, color = Color.White)
+
+            }
+            Spacer(modifier = Modifier.height(40.dp))
+
+            Text(
+                text = "Enter the OTP",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            OTPTextFields(length = 6) { getOpt ->
+                otpVal = getOpt
+
+            }
+            Spacer(modifier = Modifier.height(30.dp))
+            Button(
+                onClick = {
+                    if (otpVal != null) {
+                        onClick("", otpVal!!)
+                    }
+                }, modifier = Modifier
+                    .fillMaxWidth(0.8f)
+                    .height(45.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Purple80),
+                shape = RoundedCornerShape(10.dp)
+            ) {
+                Text(
+                    text = "Otp Verify",
+                    fontSize = 13.sp,
+                    color = Color.White
+                )
+
+            }
 
         }
-
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+fun OTPScreenPreview() {
+    OTPScreen(onClick = { mobileNum, otp -> })
 }
-
-
