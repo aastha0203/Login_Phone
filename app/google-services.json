@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "602680721617",
+    "project_id": "loginphone-858fb",
+    "storage_bucket": "loginphone-858fb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:602680721617:android:9b85c9fa9b675e652dc5f0",
+        "android_client_info": {
+          "package_name": "com.example.login_phone"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDVC5NYAMnLIY25exgALbl8hRu0465YUhw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
