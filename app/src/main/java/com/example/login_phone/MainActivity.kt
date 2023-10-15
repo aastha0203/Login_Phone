@@ -2,6 +2,7 @@ package com.example.login_phone
 
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -56,7 +57,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             Login_phoneTheme {
-
                 Surface(
                     color = MaterialTheme.colorScheme.background
                 ) {
@@ -68,7 +68,6 @@ class MainActivity : ComponentActivity() {
                             otpVerification(otp)
                         }
                     }
-
                 }
             }
         }
@@ -78,6 +77,7 @@ class MainActivity : ComponentActivity() {
         .setAppVerificationDisabledForTesting(false)
 
     private fun send(mobileNum: String) {
+        Log.d("otp", "+91$mobileNum")
         val options = PhoneAuthOptions.newBuilder(mAuth)
             .setPhoneNumber("+91$mobileNum")
             .setTimeout(60L, TimeUnit.SECONDS)
@@ -87,11 +87,13 @@ class MainActivity : ComponentActivity() {
                 override fun onVerificationCompleted(p0: PhoneAuthCredential) {
                     Toast.makeText(applicationContext, "Verification Completed", Toast.LENGTH_SHORT)
                         .show()
+                    Log.d("OTP","Verification Completed")
                 }
 
                 override fun onVerificationFailed(p0: FirebaseException) {
                     Toast.makeText(applicationContext, "Verification Failed", Toast.LENGTH_SHORT)
                         .show()
+                    Log.d("OTP","Verification Failed")
                 }
 
                 override fun onCodeSent(otp: String, p1: PhoneAuthProvider.ForceResendingToken) {
@@ -99,6 +101,7 @@ class MainActivity : ComponentActivity() {
                     verificationOtp = otp
                     Toast.makeText(applicationContext, "Otp Send Successfully", Toast.LENGTH_SHORT)
                         .show()
+                    Log.d("OTP","Otp Send Successfully")
                 }
             }).build()
         PhoneAuthProvider.verifyPhoneNumber(options)
@@ -106,18 +109,15 @@ class MainActivity : ComponentActivity() {
 
     private fun otpVerification(otp: String) {
         val credential = PhoneAuthProvider.getCredential(verificationOtp, otp)
-        FirebaseAuth.getInstance().signInWithCredential(credential)
+        mAuth.signInWithCredential(credential)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    Toast.makeText(
-                        applicationContext,
-                        "Verification Successful",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(applicationContext, "Verification Successful", Toast.LENGTH_SHORT).show()
+                    Log.d("OTP","Verification Successful")
                 } else {
                     Toast.makeText(applicationContext, "Wrong Otp", Toast.LENGTH_SHORT).show()
+                    Log.d("OTP","Wrong Otp")
                 }
-
             }
     }
 
@@ -166,8 +166,7 @@ fun OTPScreen(
             Spacer(modifier = Modifier.height(50.dp))
             OutlinedTextField(
                 value = phoneNumber.value,
-                onValueChange =
-                { phoneNumber.value = it },
+                onValueChange = { phoneNumber.value = it },
                 label = { Text(text = "Phone Number") },
                 placeholder = { Text(text = "Phone Number") },
                 leadingIcon = { Icon(Icons.Filled.Phone, contentDescription = "Phone Number") },
